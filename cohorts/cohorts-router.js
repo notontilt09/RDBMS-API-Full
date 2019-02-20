@@ -29,9 +29,10 @@ router.get('/:id', async (req, res) => {
     try {
         // grab cohort with id matching input parameter
         const cohort = await db('cohorts')
-            .where({ id: req.params.id });
+            .where({ id: req.params.id })
+            .first();
             // if nothing found, throw an error
-            if (cohort.length === 0) {
+            if (!cohort) {
                 res.status(404).json({ message: `The cohort with id ${req.params.id} does not exist` });
             // if record round, return the record
             } else {
