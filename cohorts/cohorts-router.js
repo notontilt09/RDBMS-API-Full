@@ -16,6 +16,7 @@ const errors = {
 // get all cohorts
 router.get('/', async (req, res) => {
     try {
+        // grab all cohorts and return them
         const cohorts = await db('cohorts');
         res.status(200).json(cohorts);
     } catch (error) {
@@ -26,11 +27,13 @@ router.get('/', async (req, res) => {
 // get cohort by id
 router.get('/:id', async (req, res) => {
     try {
+        // grab cohort with id matching input parameter
         const cohort = await db('cohorts')
             .where({ id: req.params.id });
-
+            // if nothing found, throw an error
             if (cohort.length === 0) {
                 res.status(404).json({ message: `The cohort with id ${req.params.id} does not exist` });
+            // if record round, return the record
             } else {
                 res.status(200).json(cohort)
             }
@@ -46,12 +49,14 @@ router.post('/', async (req, res) => {
         if (!req.body.name) {
             res.status(404).json({ message: 'name required' });
         } else {
+            // grab id of new cohort after insertion
             const [id] = await db('cohorts').insert(req.body)
-            
+            // find cohort with corresponding new id
             const cohort = await db('cohorts')
                 .where({ id })
                 .first();
 
+            // send successful post status with new cohort data
             res.status(201).json(cohort);
         }
         
@@ -64,12 +69,15 @@ router.post('/', async (req, res) => {
 // delete cohort by id
 router.delete('/:id', async (req, res) => {
     try {
+        // find records where id matches input id and delete them
         const count = await db('cohorts')
             .where({ id: req.params.id })
             .del();
 
+        // if record was delete, status 204 and stop
         if (count) {
             res.status(204).end()
+        // if nothing deleted, throw error
         } else {
             res.status(404).json({ message: 'Record with that id not found' });
         }
@@ -80,19 +88,23 @@ router.delete('/:id', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
     try {
+        // if no name provided, throw an error
         if (!req.body.name) {
             res.status(404).json({ message: 'Record must include a name' });
         } else {
+            // find records where id matches given id and update with given data
             const count = await db('cohorts')
                 .where({ id: req.params.id })
                 .update(req.body);
-    
+
+            // if record was updated, show the updated record
             if (count) {
                 const cohort = await db('cohorts')
                     .where({ id: req.params.id })
                     .first();
                 
                 res.status(200).json(cohort)
+            // if record not found, throw an error
             } else {
                 res.status(404).json({ message: 'Record with that id not found' });
             }
@@ -105,16 +117,18 @@ router.put('/:id', async (req, res) => {
 
 // subroute to get all students by cohort
 router.get('/:id/students', async (req, res) => {
+    // find the cohort of the given id
     const cohort = await db('cohorts')
         .where({ id: req.params.id })
         .first();
-
+        // if the cohort doesn't exists send an error
         if (!cohort) {
             res.status(404).json({ message: `Cohort with id ${req.params.id} does not exist` });
         } else {
+            // find the students in the given cohort id
             const students = await db('students')
                 .where({ cohorts_id: req.params.id })
-        
+                // if no students in the cohort give an error
                 if (students.length === 0) {
                     res.status(404).json({ message: `There are no students in the cohort with id ${req.params.id}` });
                 } else {
