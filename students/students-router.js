@@ -16,7 +16,6 @@ router.get('/', async (req, res) => {
     }
 })
 
-/// TODO: MAKE CHANGE THE RESULT TO INCLUDE COHORT NAME AND REMOVE COHORT_ID
 router.get('/:id', async (req, res) => {
     try {
         const student = await db('students')
